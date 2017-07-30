@@ -19,6 +19,7 @@ class CompanyImpl final : public Company::Service
 public:
     CompanyImpl()
         : nextID_(0) { }
+    
     grpc::Status AddEmployee(grpc::ServerContext *context, const Employee *request, 
                              EmployeeID *response) override
     {
@@ -28,11 +29,13 @@ public:
         ++nextID_;
         return grpc::Status::OK;
     }
+    
     grpc::Status ListEmployees(grpc::ServerContext *context, const AgeRange *request, 
                                grpc::ServerWriter<Employee> *writer) override
     {
         auto low = request->low();
         auto high = request->high();
+
         std::lock_guard<std::mutex> guard(mtx_);
         for (auto &entry : employees_)
         {
@@ -42,8 +45,10 @@ public:
                 writer->Write(employee); // 调用 Write 写入一个 Employee 消息给client
             }
         }
+        
         return grpc::Status::OK;
     }
+    
 private:
     int32_t                               nextID_;
     std::mutex                            mtx_;
@@ -54,11 +59,14 @@ int main(int argc, char *argv[])
 {
     std::string addr = "0.0.0.0:5000";
     CompanyImpl service;
-    grpc::ServerBuilder builder;
+
+    grpc::ServerBuilder builder;    
     builder.AddListeningPort(addr, grpc::InsecureServerCredentials());
     builder.RegisterService(&service);
-    auto server = builder.BuildAndStart();
+    
+    auto server = builder.BuildAndStart();    
     std::cout << "Server listening on " << addr << std::endl;
     server->Wait();
+
     return 0;
 }

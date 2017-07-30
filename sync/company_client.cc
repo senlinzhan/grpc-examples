@@ -43,6 +43,7 @@ public:
             std::cout << "Employee: name = " << employee.name() << ", age = " << employee.age() << std::endl;
         }
     }
+
 private:
     std::unique_ptr<Company::Stub> stub_;
 };
@@ -50,9 +51,11 @@ private:
 int main(int argc, char *argv[])
 {
     auto channel = grpc::CreateChannel("localhost:5000", grpc::InsecureChannelCredentials());
+
     CompanyClient client(channel);
     client.AddEmployee("hello", 10);
     client.AddEmployee("world", 20);
     client.ListEmployeesByAge(0, 100);
+
     return 0;
 }
