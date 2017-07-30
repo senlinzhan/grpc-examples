@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package company;
+
+service Company {
+    rpc AddEmployee(Employee) returns (EmployeeID) {}         // 提交员工信息
+    rpc ListEmployees(AgeRange) returns (stream Employee) {}  // 查询员工信息
+}
+
+message Employee {
+    string name = 1;
+    int32  age  = 2;
+}
+
+message EmployeeID {
+    int32 id = 1;
+}
+
+message AgeRange {
+    int32 low = 1;
+    int32 high = 2;
+}
