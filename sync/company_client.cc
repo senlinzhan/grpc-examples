@@ -1,4 +1,5 @@
 #include "company.grpc.pb.h"
+
 #include <iostream>
 #include <memory>
 #include <string>
@@ -26,8 +27,15 @@ public:
         employee.set_age(age);
         EmployeeID id;
         grpc::ClientContext context;
-        stub_->AddEmployee(&context, employee, &id);
-        std::cout << "AddEmployee() - new id: " << id.id() << std::endl;
+        auto status = stub_->AddEmployee(&context, employee, &id);
+        if (status.ok())
+        {
+            std::cout << "AddEmployee() successed, new id is " << id.id() << std::endl;                            
+        }
+        else
+        {
+            std::cout << "AddEmployee() failed" << std::endl;                            
+        }
     }
 
     void ListEmployeesByAge(int32_t low, int32_t high)
@@ -36,11 +44,24 @@ public:
         range.set_low(low);
         range.set_high(high);
         grpc::ClientContext context;
+
+        Employee employee;        
         auto reader = stub_->ListEmployees(&context, range);
-        Employee employee;
+        std::cout << "call ListEmployees() ..." << std::endl;
+        
         while (reader->Read(&employee))
         {
             std::cout << "Employee: name = " << employee.name() << ", age = " << employee.age() << std::endl;
+        }
+
+        auto status = reader->Finish();
+        if (status.ok())
+        {
+            std::cout << "ListEmployees() successed" << std::endl;                                        
+        }
+        else
+        {
+            std::cout << "ListEmployees() failed" << std::endl;
         }
     }
 
@@ -51,11 +72,15 @@ private:
 int main(int argc, char *argv[])
 {
     auto channel = grpc::CreateChannel("localhost:5000", grpc::InsecureChannelCredentials());
-
     CompanyClient client(channel);
-    client.AddEmployee("hello", 10);
-    client.AddEmployee("world", 20);
-    client.ListEmployeesByAge(0, 100);
+        
+    for (int32_t i = 0; i < 100; ++i)
+    {
+        std::string name = "hello" + std::to_string(i);        
+        client.AddEmployee(name, i);
+    }
 
+    client.ListEmployeesByAge(0, 100);
+    
     return 0;
 }
