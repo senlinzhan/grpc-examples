@@ -58,7 +58,7 @@ public:
 
             if (call->status.ok())
             {
-                std::cout << "AsyncAddEmployee() successed, new id is " << call->result.id() << std::endl;                
+                std::cout << "AsyncAddEmployee() successed, new id is " << call->result.id() << std::flush << std::endl;                
             }
             else
             {
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
     // Spawn reader thread that loops indefinitely
     std::thread thread_ = std::thread(&AsyncCompanyClient::Loop, &client);
 
-    for (int32_t i = 0; i < 100; i++) {
+    for (int32_t i = 0; i < 1000; i++) {
         std::string name("hello" + std::to_string(i));
         client.AsyncAddEmployee(name, i);
     }
